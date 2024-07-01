@@ -8,7 +8,8 @@ If you are using i18next in your frontend and Laravel in your backend, this pack
 
 
 ## How does it work?
-todo
+The package provides the routes to fetch the translations and to save missing translations when using i18next-http-backend.   
+it supports Laravels JSON and PHP translation files and converts them on the fly to be compatible with i18next.
 
 ## Installation
 
@@ -65,7 +66,11 @@ composer test
 ## Contributing
 
 ### Ideas/Roadmap
-* todo
+* Add more tests
+* Make the package more flexible
+* Support namespaces
+* Support i18next multiload
+
 
 Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
