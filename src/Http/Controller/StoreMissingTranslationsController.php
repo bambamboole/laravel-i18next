@@ -7,6 +7,7 @@ use Bambamboole\LaravelTranslationDumper\ArrayExporter;
 use Bambamboole\LaravelTranslationDumper\TranslationDumper;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class StoreMissingTranslationsController
 {
@@ -16,7 +17,10 @@ class StoreMissingTranslationsController
     {
         $translations = $request->json()->all();
         $dumper = new TranslationDumper($this->fs, new ArrayExporter(), lang_path(), $locale, 'i18next-');
-        $dumper->dump($translations);
+        Cache::lock('i18next-translation-dump', 5)
+            ->block(5, function () use ($dumper, $translations) {
+                $dumper->dump($translations);
+            });
 
         return $this->translationsLoader->loadTranslations($locale);
     }

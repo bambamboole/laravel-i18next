@@ -19,7 +19,8 @@
         "bambamboole/laravel-translation-dumper": "^0.4.0",
         "illuminate/http": "^9.0|^10.0|^11.0",
         "illuminate/support": "^9.0|^10.0|^11.0",
-        "illuminate/translation": "^9.0|^10.0|^11.0"
+        "illuminate/translation": "^9.0|^10.0|^11.0",
+        "illuminate/cache": "^9.0|^10.0|^11.0"
     },
     "require-dev": {
         "laravel/pint": "^1.8",
