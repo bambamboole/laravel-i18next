@@ -42,7 +42,7 @@ class I18NextTranslationsLoader
 
         for ($i = 0; $i < count($keys); $i++) {
             $laravelKey = $keys[$i];
-            $i18nKey = preg_replace("/:([\w\d]+)/", '{{$1}}', $laravelKey);
+            $i18nKey = preg_replace("/:([\w\d]+)/", '{{$1}}', is_int($laravelKey) ? (string) $laravelKey : $laravelKey);
             $laravelValue = $translations[$laravelKey];
 
             if (is_array($laravelValue)) {
