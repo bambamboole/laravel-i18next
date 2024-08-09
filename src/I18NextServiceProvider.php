@@ -13,7 +13,7 @@ class I18NextServiceProvider extends ServiceProvider
         $this->app->singleton(
             I18NextTranslationsLoader::class,
             fn (Application $app) => new I18NextTranslationsLoader(
-                new Filesystem(),
+                new Filesystem,
                 $app->make('translation.loader'),
                 $app->langPath(),
             ),
