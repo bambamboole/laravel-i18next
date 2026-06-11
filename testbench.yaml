@@ -1,0 +1,2 @@
+providers:
+  - Bambamboole\LaravelI18Next\I18NextServiceProvider

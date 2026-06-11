@@ -2,9 +2,14 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/bambamboole/laravel-i18next.svg?style=flat-square)](https://packagist.org/packages/bambamboole/laravel-i18next)
 [![Total Downloads](https://img.shields.io/packagist/dt/bambamboole/laravel-i18next.svg?style=flat-square)](https://packagist.org/packages/bambamboole/laravel-i18next)
-![GitHub Actions](https://github.com/bambamboole/laravel-i18next/actions/workflows/main.yml/badge.svg)
+![GitHub Actions](https://github.com/bambamboole/laravel-i18next/actions/workflows/ci.yml/badge.svg)
 
 If you are using i18next in your frontend and Laravel in your backend, this package is for you.
+
+## Requirements
+
+- PHP 8.2+
+- Laravel 11, 12 or 13
 
 
 ## How does it work?
