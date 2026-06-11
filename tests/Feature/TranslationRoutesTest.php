@@ -16,6 +16,23 @@ it('serves the laravel translations in the i18next format', function () {
         ]);
 });
 
+it('serves translations from nested php files under sub directories', function () {
+    $response = $this->getJson('/locales/en/translation.json');
+
+    $response->assertOk();
+
+    // lang/en/entities/salesOrder.php is namespaced by its path: entities.salesOrder.*
+    expect($response->json())
+        ->toMatchArray([
+            'entities.salesOrder.title' => 'Sales order',
+            'entities.salesOrder.status.open' => 'Open',
+            'entities.salesOrder.status.shipped' => 'Shipped',
+            'entities.salesOrder.summary' => '{{count}} items for {{customer}}',
+            'entities.salesOrder.lines_one' => 'one line',
+            'entities.salesOrder.lines_other' => '{{count}} lines',
+        ]);
+});
+
 it('persists missing translations and returns the updated set', function () {
     $response = $this->postJson('/locales/add/en/translation', [
         'some.missing.key' => 'A brand new string',

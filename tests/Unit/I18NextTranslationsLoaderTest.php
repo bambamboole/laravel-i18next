@@ -9,34 +9,32 @@ it('converts laravel translations into the i18next format', function () {
     $loader = $this->createMock(Loader::class);
 
     $fs->expects($this->once())
-        ->method('files')
+        ->method('allFiles')
         ->with('langPath/en')
         ->willReturn([
             new SplFileInfo('langPath/en/test.php'),
+            new SplFileInfo('langPath/en/entities/salesOrder.php'),
         ]);
 
-    $loader->expects($counter = $this->exactly(2))
-        ->method('load')
-        ->willReturnCallback(function ($locale, $group) use ($counter) {
-            if ($counter->numberOfInvocations() === 1) {
-                expect($locale)->toBe('en');
-                expect($group)->toBe('*');
+    $loader->method('load')
+        ->willReturnCallback(function ($locale, $group) {
+            expect($locale)->toBe('en');
 
-                return [
+            return match ($group) {
+                '*' => [
                     'simple' => 'value',
                     'test' => 'value with :variable',
-                ];
-            }
-
-            expect($locale)->toBe('en');
-            expect($group)->toBe('test');
-
-            return [
-                'nested' => [
-                    'key' => 'value',
                 ],
-                'plural' => 'one apple|:count apples',
-            ];
+                'test' => [
+                    'nested' => ['key' => 'value'],
+                    'plural' => 'one apple|:count apples',
+                ],
+                'entities/salesOrder' => [
+                    'title' => 'Sales order',
+                    'status' => ['open' => 'Open'],
+                ],
+                default => [],
+            };
         });
 
     $subject = new I18NextTranslationsLoader($fs, $loader, 'langPath');
@@ -47,5 +45,7 @@ it('converts laravel translations into the i18next format', function () {
         'test.nested.key' => 'value',
         'test.plural_one' => 'one apple',
         'test.plural_other' => '{{count}} apples',
+        'entities.salesOrder.title' => 'Sales order',
+        'entities.salesOrder.status.open' => 'Open',
     ]);
 });

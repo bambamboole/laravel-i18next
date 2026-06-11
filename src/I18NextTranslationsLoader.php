@@ -19,15 +19,23 @@ class I18NextTranslationsLoader
     public function loadTranslations(string $locale): array
     {
         $translations = $this->loader->load($locale, '*', '*');
-        $groups = array_map(
-            fn (\SplFileInfo $file) => $file->getBasename('.php'),
-            $this->fs->files($this->langPath.'/'.$locale),
-        );
-        foreach ($groups as $group) {
+        $localePath = $this->langPath.'/'.$locale;
+
+        foreach ($this->fs->allFiles($localePath) as $file) {
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
+            // Namespace each group by its path relative to the locale directory,
+            // so entities/salesOrder.php becomes entities.salesOrder.* while a
+            // top level test.php stays test.*
+            $relativePath = ltrim(str_replace($localePath, '', $file->getPathname()), '/\\');
+            $group = str_replace('\\', '/', substr($relativePath, 0, -strlen('.php')));
+            $prefix = str_replace('/', '.', $group);
+
             $nonPrefixedGroupTranslations = $this->loader->load($locale, $group);
             $groupTranslations = [];
             foreach ($nonPrefixedGroupTranslations as $key => $translation) {
-                $groupTranslations[$group.'.'.$key] = $translation;
+                $groupTranslations[$prefix.'.'.$key] = $translation;
             }
             $translations = array_merge($translations, $groupTranslations);
         }
