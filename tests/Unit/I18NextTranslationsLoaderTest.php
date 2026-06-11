@@ -3,6 +3,7 @@
 use Bambamboole\LaravelI18Next\I18NextTranslationsLoader;
 use Illuminate\Contracts\Translation\Loader;
 use Illuminate\Filesystem\Filesystem;
+use Symfony\Component\Finder\SplFileInfo;
 
 it('converts laravel translations into the i18next format', function () {
     $fs = $this->createMock(Filesystem::class);
@@ -12,8 +13,8 @@ it('converts laravel translations into the i18next format', function () {
         ->method('allFiles')
         ->with('langPath/en')
         ->willReturn([
-            new SplFileInfo('langPath/en/test.php'),
-            new SplFileInfo('langPath/en/entities/salesOrder.php'),
+            new SplFileInfo('langPath/en/test.php', '', 'test.php'),
+            new SplFileInfo('langPath/en/entities/salesOrder.php', 'entities', 'entities/salesOrder.php'),
         ]);
 
     $loader->method('load')
