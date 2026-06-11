@@ -4,7 +4,6 @@ namespace Bambamboole\LaravelI18Next;
 
 use Illuminate\Contracts\Translation\Loader;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Str;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 
@@ -44,29 +43,71 @@ class I18NextTranslationsLoader
     private function prepare(array $translations): array
     {
         $i18nTranslations = [];
-        $keys = array_keys($translations);
 
-        for ($i = 0; $i < count($keys); $i++) {
-            $laravelKey = $keys[$i];
-            $i18nKey = preg_replace("/:([\w\d]+)/", '{{$1}}', is_int($laravelKey) ? (string) $laravelKey : $laravelKey);
-            $laravelValue = $translations[$laravelKey];
+        foreach ($translations as $laravelKey => $laravelValue) {
+            $i18nKey = $this->replaceVariables(is_int($laravelKey) ? (string) $laravelKey : $laravelKey);
 
             if (is_array($laravelValue)) {
                 $i18nTranslations[$i18nKey] = $this->prepare($laravelValue);
-            } else {
-                $translationWithReplacedVariableSyntax = preg_replace("/:([\w\d]+)/", '{{$1}}', $laravelValue);
-                // handle pluralisation
-                if (Str::contains($translationWithReplacedVariableSyntax, '|')) {
-                    [$one, $other] = explode('|', $translationWithReplacedVariableSyntax);
-                    $i18nTranslations[$i18nKey.'_one'] = $one;
-                    $i18nTranslations[$i18nKey.'_other'] = $other;
-                } else {
-                    $i18nTranslations[$i18nKey] = $translationWithReplacedVariableSyntax;
-                }
+
+                continue;
+            }
+
+            foreach ($this->expandPluralization($laravelValue) as $suffix => $text) {
+                $i18nTranslations[$i18nKey.$suffix] = $this->replaceVariables($text);
             }
         }
 
         return $this->flatten($i18nTranslations);
+    }
+
+    private function replaceVariables(string $value): string
+    {
+        return preg_replace('/:(\w+)/', '{{$1}}', $value) ?? $value;
+    }
+
+    /**
+     * Map a Laravel translation value to one or more i18next entries keyed by
+     * their plural suffix. A non plural value yields a single entry with an
+     * empty suffix; a simple "one|other" value yields _one/_other; and explicit
+     * forms like "{0} none|{1} one|[2,*] many" yield _zero/_one/_other with the
+     * count conditions stripped.
+     *
+     * @return array<string, string>
+     */
+    private function expandPluralization(string $value): array
+    {
+        if (! str_contains($value, '|')) {
+            return ['' => $value];
+        }
+
+        $segments = explode('|', $value);
+        $explicit = [];
+        $matched = 0;
+        foreach ($segments as $segment) {
+            if (preg_match('/^[{\[]([^\[\]{}]*)[}\]]\s*(.*)$/s', $segment, $matches)) {
+                $matched++;
+                $explicit[$this->pluralSuffix($matches[1])] = $matches[2];
+            }
+        }
+
+        // Every segment carried an explicit count/range condition.
+        if ($matched === count($segments)) {
+            return $explicit;
+        }
+
+        [$one, $other] = array_pad($segments, 2, '');
+
+        return ['_one' => $one, '_other' => $other];
+    }
+
+    private function pluralSuffix(string $condition): string
+    {
+        return match (trim($condition)) {
+            '0' => '_zero',
+            '1' => '_one',
+            default => '_other',
+        };
     }
 
     private function flatten($translations): array

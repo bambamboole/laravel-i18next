@@ -16,6 +16,18 @@ If you are using i18next in your frontend and Laravel in your backend, this pack
 The package provides the routes to fetch the translations and to save missing translations when using i18next-http-backend.   
 it supports Laravels JSON and PHP translation files and converts them on the fly to be compatible with i18next.
 
+PHP files in sub directories are namespaced by their path, so `lang/en/entities/salesOrder.php` is exposed under the `entities.salesOrder.*` keys.
+
+### Pluralization
+Laravel plural strings are converted to i18next plural suffixes:
+
+| Laravel | i18next |
+| --- | --- |
+| `one apple\|:count apples` | `key_one`, `key_other` |
+| `{0} no files\|{1} one file\|[2,*] :count files` | `key_zero`, `key_one`, `key_other` |
+
+Explicit count conditions (`{0}`, `{1}`) map to `_zero`/`_one`; any other condition or open-ended range (`[2,*]`) maps to `_other`.
+
 ## Installation
 
 You can install the package via composer.

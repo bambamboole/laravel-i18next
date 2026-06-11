@@ -5,5 +5,6 @@ return [
         'key' => 'value',
     ],
     'plural' => 'one apple|:count apples',
+    'multiPlural' => '{0} no files|{1} one file|[2,*] :count files',
     'greeting' => 'Hello :name',
 ];

@@ -29,6 +29,7 @@ it('converts laravel translations into the i18next format', function () {
                 'test' => [
                     'nested' => ['key' => 'value'],
                     'plural' => 'one apple|:count apples',
+                    'multiPlural' => '{0} no files|{1} one file|[2,*] :count files',
                 ],
                 'entities/salesOrder' => [
                     'title' => 'Sales order',
@@ -46,6 +47,9 @@ it('converts laravel translations into the i18next format', function () {
         'test.nested.key' => 'value',
         'test.plural_one' => 'one apple',
         'test.plural_other' => '{{count}} apples',
+        'test.multiPlural_zero' => 'no files',
+        'test.multiPlural_one' => 'one file',
+        'test.multiPlural_other' => '{{count}} files',
         'entities.salesOrder.title' => 'Sales order',
         'entities.salesOrder.status.open' => 'Open',
     ]);

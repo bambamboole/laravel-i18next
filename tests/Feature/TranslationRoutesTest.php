@@ -16,6 +16,20 @@ it('serves the laravel translations in the i18next format', function () {
         ]);
 });
 
+it('expands laravel multi-form plurals into i18next plural suffixes', function () {
+    $response = $this->getJson('/locales/en/translation.json');
+
+    $response->assertOk();
+
+    // '{0} no files|{1} one file|[2,*] :count files'
+    expect($response->json())
+        ->toMatchArray([
+            'test.multiPlural_zero' => 'no files',
+            'test.multiPlural_one' => 'one file',
+            'test.multiPlural_other' => '{{count}} files',
+        ]);
+});
+
 it('serves translations from nested php files under sub directories', function () {
     $response = $this->getJson('/locales/en/translation.json');
 
