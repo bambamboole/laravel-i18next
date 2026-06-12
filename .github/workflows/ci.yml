@@ -55,6 +55,11 @@ jobs:
         if: matrix.laravel == '11'
         run: composer config --no-plugins policy.advisories.block false
 
+      # The browser plugin requires PHP 8.3+ and is only used by the dedicated
+      # browser job, so drop it here to keep the Unit/Feature suite on PHP 8.2.
+      - name: Drop browser-only dev dependency
+        run: composer remove --dev pestphp/pest-plugin-browser --no-update --no-interaction
+
       - name: Install dependencies
         run: composer update --prefer-dist --no-progress --no-interaction
 
