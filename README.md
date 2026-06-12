@@ -70,8 +70,13 @@ return [
         'store' => null,                // null = default cache store
         'ttl' => null,                  // null = forever
     ],
+
+    // 'flat' = dotted keys (use keySeparator: false), 'nested' = nested JSON tree.
+    'output' => 'flat',
 ];
 ```
+
+Set `'output' => 'nested'` if you'd rather receive a nested JSON tree and keep i18next's default dot key separator (no `keySeparator: false` needed).
 
 > **Security:** the store route writes translation files. Disable it in production
 > (`I18NEXT_SAVE_MISSING=false`) or put it behind auth via `save_missing.middleware`.

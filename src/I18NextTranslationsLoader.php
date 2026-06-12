@@ -4,6 +4,7 @@ namespace Bambamboole\LaravelI18Next;
 
 use Illuminate\Contracts\Translation\Loader;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Arr;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 
@@ -13,6 +14,7 @@ class I18NextTranslationsLoader
         private Filesystem $fs,
         private Loader $loader,
         private string $langPath,
+        private bool $nested = false,
     ) {}
 
     public static function cacheKey(string $locale): string
@@ -47,7 +49,9 @@ class I18NextTranslationsLoader
             $translations = array_merge($translations, $groupTranslations);
         }
 
-        return $this->prepare($translations);
+        $prepared = $this->prepare($translations);
+
+        return $this->nested ? Arr::undot($prepared) : $prepared;
     }
 
     private function prepare(array $translations): array

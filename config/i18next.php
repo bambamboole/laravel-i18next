@@ -51,4 +51,16 @@ return [
         'ttl' => null,
     ],
 
+    /*
+     |--------------------------------------------------------------------------
+     | Output format
+     |--------------------------------------------------------------------------
+     |
+     | "flat" exposes flat, dotted i18next keys (use keySeparator: false on the
+     | frontend). "nested" returns a nested JSON tree, which works with
+     | i18next's default dot key separator.
+     |
+     */
+    'output' => 'flat',
+
 ];

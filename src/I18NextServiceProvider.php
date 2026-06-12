@@ -27,6 +27,7 @@ class I18NextServiceProvider extends PackageServiceProvider
                 new Filesystem,
                 $app->make('translation.loader'),
                 $app->langPath(),
+                $app['config']->get('i18next.output', 'flat') === 'nested',
             ),
         );
     }

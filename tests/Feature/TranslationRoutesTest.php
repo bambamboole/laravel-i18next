@@ -102,6 +102,15 @@ it('does not register the store route when saving is disabled', function () {
     $this->postJson('/locales/add/en/translation', ['Foo' => 'Foo'])->assertNotFound();
 });
 
+it('returns a nested tree when the output is configured as nested', function () {
+    $this->withConfig(['i18next.output' => 'nested']);
+
+    expect($this->getJson('/locales/en/translation.json')->json())
+        ->toHaveKey('test.greeting', 'Hello {{name}}')          // nested: test -> greeting
+        ->toHaveKey('entities.salesOrder.status.open', 'Open')  // nested sub-dir
+        ->toHaveKey('test.plural_one', 'one apple');            // plural suffix stays on the leaf
+});
+
 it('serves the converted payload from the cache when caching is enabled', function () {
     $this->withConfig(['i18next.cache.enabled' => true]);
 
