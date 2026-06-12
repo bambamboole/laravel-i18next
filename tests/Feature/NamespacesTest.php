@@ -7,13 +7,13 @@ beforeEach(function () {
 it('serves only the root JSON strings under the translation namespace', function () {
     expect($this->getJson('/locales/en/translation.json')->json())
         ->toMatchArray(['simple' => 'value', 'intro' => 'Hi {{name}}'])
-        ->not->toHaveKey('test.greeting');   // groups are their own namespaces now
+        ->not->toHaveKey('test.greeting');
 });
 
 it('serves a top level group as a namespace', function () {
     expect($this->getJson('/locales/en/test.json')->json())
         ->toMatchArray([
-            'nested.key' => 'value',          // unprefixed (the namespace is the prefix)
+            'nested.key' => 'value',
             'plural_one' => 'one apple',
             'multiPlural_interval' => '(0)[no files];(1)[one file];(2-inf)[{{count}} files];',
         ]);
@@ -40,9 +40,6 @@ it('reconstructs the full key for a slashed namespace before dumping', function 
     $this->postJson('/locales/add/en/entities/salesOrder', ['subtitle' => 'subtitle'])
         ->assertOk();
 
-    // The key is stored as entities.salesOrder.subtitle somewhere under lang/en;
-    // with the translation-dumper's nested-file support it lands back in
-    // entities/salesOrder.php, otherwise in a flat entities.php.
     $combined = array_replace(
         require $this->langPath.'/en/entities/salesOrder.php',
         is_file($this->langPath.'/en/entities.php')

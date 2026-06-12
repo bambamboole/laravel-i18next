@@ -12,7 +12,6 @@ abstract class TestCase extends BaseTestCase
 {
     protected function getEnvironmentSetUp($app): void
     {
-        // Serve the committed fixture translations through the package routes.
         $app->useLangPath(dirname(__DIR__).'/Fixtures/lang');
     }
 

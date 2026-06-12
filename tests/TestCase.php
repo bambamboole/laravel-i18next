@@ -54,8 +54,6 @@ abstract class TestCase extends BaseTestCase
     {
         $app->useLangPath($this->langPath);
 
-        // The store route acquires a cache lock; keep it on the in-memory array
-        // store so the test does not depend on the ambient cache driver.
         $app['config']->set('cache.default', 'array');
 
         foreach ($this->configOverrides as $key => $value) {

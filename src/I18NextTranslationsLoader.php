@@ -27,17 +27,12 @@ class I18NextTranslationsLoader
         $translations = $this->loader->load($locale, '*', '*');
         $localePath = $this->langPath.'/'.$locale;
 
-        // A locale may have only a JSON file (or not exist at all, e.g. an
-        // i18next fallback such as "dev"); in that case there are no PHP groups.
         $phpFiles = $this->fs->isDirectory($localePath) ? $this->fs->allFiles($localePath) : [];
 
         foreach ($phpFiles as $file) {
             if ($file->getExtension() !== 'php') {
                 continue;
             }
-            // Namespace each group by its path relative to the locale directory,
-            // so entities/salesOrder.php becomes entities.salesOrder.* while a
-            // top level test.php stays test.*
             $group = str_replace('\\', '/', substr($file->getRelativePathname(), 0, -strlen('.php')));
             $prefix = str_replace('/', '.', $group);
 
@@ -52,13 +47,6 @@ class I18NextTranslationsLoader
         return $this->finalize($translations);
     }
 
-    /**
-     * Load a single i18next namespace, where the namespace is the path of the
-     * group file under lang/{locale} (e.g. "entities/salesOrder" maps to
-     * lang/{locale}/entities/salesOrder.php). The reserved "translation"
-     * namespace maps to the locale's root JSON file. Keys are returned
-     * unprefixed, since the namespace itself is the prefix.
-     */
     public function loadNamespace(string $locale, string $namespace): array
     {
         $translations = $namespace === 'translation'
@@ -102,15 +90,7 @@ class I18NextTranslationsLoader
         return preg_replace('/:(\w+)/', '{{$1}}', $value) ?? $value;
     }
 
-    /**
-     * Map a Laravel translation value to one or more i18next entries keyed by
-     * their plural suffix. A non plural value yields a single entry with an
-     * empty suffix; a simple "one|other" value yields _one/_other; and explicit
-     * forms like "{0} none|{1} one|[2,*] many" yield a single _interval value in
-     * the i18next-intervalplural-postprocessor format.
-     *
-     * @return array<string, string>
-     */
+    /** @return array<string, string> */
     private function expandPluralization(string $value): array
     {
         if (! str_contains($value, '|')) {
@@ -125,9 +105,6 @@ class I18NextTranslationsLoader
             }
         }
 
-        // Every segment carried an explicit count/range condition: emit an
-        // i18next interval plural string. The frontend needs the
-        // i18next-intervalplural-postprocessor to resolve it.
         if (count($intervals) === count($segments)) {
             return ['_interval' => implode(';', $intervals).';'];
         }
@@ -137,10 +114,6 @@ class I18NextTranslationsLoader
         return ['_one' => $one, '_other' => $other];
     }
 
-    /**
-     * Translate a Laravel plural condition into an i18next interval:
-     * "0" -> "0", "1" -> "1", "2,5" -> "2-5", "2,*" -> "2-inf".
-     */
     private function toInterval(string $condition): string
     {
         $condition = trim($condition);

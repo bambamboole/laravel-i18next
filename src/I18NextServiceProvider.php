@@ -48,8 +48,6 @@ class I18NextServiceProvider extends PackageServiceProvider
         $pattern = $config->get('i18next.routes.locale_pattern', '[A-Za-z_-]+');
         $namespaces = (bool) $config->get('i18next.namespaces', false);
 
-        // In namespace mode the namespace is the path of the group file
-        // (e.g. "entities/salesOrder"), so the parameter may contain slashes.
         [$fetchUri, $storeUri] = $namespaces
             ? ['locales/{locale}/{namespace}.json', 'locales/add/{locale}/{namespace}']
             : ['locales/{locale}/translation.json', 'locales/add/{locale}/translation'];

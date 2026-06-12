@@ -22,7 +22,6 @@ it('expands laravel multi-form plurals into an i18next interval string', functio
 
     $response->assertOk();
 
-    // '{0} no files|{1} one file|[2,*] :count files'
     expect($response->json())
         ->toMatchArray([
             'test.multiPlural_interval' => '(0)[no files];(1)[one file];(2-inf)[{{count}} files];',
@@ -30,7 +29,6 @@ it('expands laravel multi-form plurals into an i18next interval string', functio
 });
 
 it('returns an empty set for a locale without translation files', function () {
-    // i18next requests its fallback locale (e.g. "dev"), which has no lang dir.
     $this->getJson('/locales/dev/translation.json')
         ->assertOk()
         ->assertExactJson([]);
@@ -41,7 +39,6 @@ it('serves translations from nested php files under sub directories', function (
 
     $response->assertOk();
 
-    // lang/en/entities/salesOrder.php is namespaced by its path: entities.salesOrder.*
     expect($response->json())
         ->toMatchArray([
             'entities.salesOrder.title' => 'Sales order',
@@ -54,7 +51,6 @@ it('serves translations from nested php files under sub directories', function (
 });
 
 it('persists a missing translation under its key and returns the updated set', function () {
-    // i18next posts { "<key>": "<fallbackValue>" }; default fallback == key.
     $response = $this->postJson('/locales/add/en/translation', [
         'A brand new string' => 'A brand new string',
     ]);
@@ -72,7 +68,6 @@ it('persists a missing translation under its key and returns the updated set', f
 });
 
 it('stores the request key, not the fallback value', function () {
-    // When a default value is provided it differs from the key; the key wins.
     $this->postJson('/locales/add/en/translation', [
         'Missing headline' => 'Some default text',
     ])->assertOk();
@@ -85,7 +80,6 @@ it('stores the request key, not the fallback value', function () {
 });
 
 it('rejects a locale that does not match the allowed pattern', function () {
-    // Guards against path traversal: "." is not in [A-Za-z_-].
     $this->getJson('/locales/en.US/translation.json')->assertNotFound();
     $this->postJson('/locales/add/..%2F../translation')->assertNotFound();
 });
@@ -106,9 +100,9 @@ it('returns a nested tree when the output is configured as nested', function () 
     $this->withConfig(['i18next.output' => 'nested']);
 
     expect($this->getJson('/locales/en/translation.json')->json())
-        ->toHaveKey('test.greeting', 'Hello {{name}}')          // nested: test -> greeting
-        ->toHaveKey('entities.salesOrder.status.open', 'Open')  // nested sub-dir
-        ->toHaveKey('test.plural_one', 'one apple');            // plural suffix stays on the leaf
+        ->toHaveKey('test.greeting', 'Hello {{name}}')
+        ->toHaveKey('entities.salesOrder.status.open', 'Open')
+        ->toHaveKey('test.plural_one', 'one apple');
 });
 
 it('serves the converted payload from the cache when caching is enabled', function () {
