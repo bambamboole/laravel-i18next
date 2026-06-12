@@ -36,18 +36,12 @@ it('stores a missing key in the translation namespace and returns it', function 
         ->toHaveKey('New label', 'i18next-New label');
 });
 
-it('reconstructs the full key for a slashed namespace before dumping', function () {
+it('writes a missing slashed-namespace key back into its nested file', function () {
     $this->postJson('/locales/add/en/entities/salesOrder', ['subtitle' => 'subtitle'])
         ->assertOk();
 
-    $combined = array_replace(
-        require $this->langPath.'/en/entities/salesOrder.php',
-        is_file($this->langPath.'/en/entities.php')
-            ? data_get(require $this->langPath.'/en/entities.php', 'salesOrder', [])
-            : [],
-    );
-
-    expect($combined)->toHaveKey('subtitle');
+    expect(require $this->langPath.'/en/entities/salesOrder.php')->toHaveKey('subtitle');
+    expect(is_file($this->langPath.'/en/entities.php'))->toBeFalse();
 });
 
 it('names the namespaced routes', function () {

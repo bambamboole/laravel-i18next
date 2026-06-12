@@ -4,6 +4,7 @@ namespace Bambamboole\LaravelI18Next\Http\Controller;
 
 use Bambamboole\LaravelI18Next\I18NextTranslationsLoader;
 use Bambamboole\LaravelTranslationDumper\DTO\Translation;
+use Bambamboole\LaravelTranslationDumper\FileTranslationWriter;
 use Bambamboole\LaravelTranslationDumper\TranslationDumper;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
@@ -15,20 +16,17 @@ class StoreMissingTranslationsController
 
     public function __invoke(Request $request, string $locale, ?string $namespace = null): array
     {
-        $prefix = $namespace !== null && $namespace !== 'translation'
-            ? str_replace('/', '.', $namespace).'.'
-            : '';
+        $group = $namespace !== null && $namespace !== 'translation' ? $namespace : null;
 
         $translations = [];
         foreach (array_keys($request->json()->all()) as $key) {
-            $fullKey = $prefix.$key;
-            $translations[] = new Translation($fullKey, 'i18next-'.$fullKey);
+            $translations[] = new Translation((string) $key, 'i18next-'.$key);
         }
 
-        $dumper = new TranslationDumper($this->fs, lang_path(), $locale);
+        $dumper = new TranslationDumper(new FileTranslationWriter($this->fs, lang_path()), $locale);
         Cache::lock('i18next-translation-dump', 5)
-            ->block(5, function () use ($dumper, $translations) {
-                $dumper->dump($translations);
+            ->block(5, function () use ($dumper, $translations, $group) {
+                $dumper->dump($translations, $group);
             });
 
         $cache = config('i18next.cache', []);
