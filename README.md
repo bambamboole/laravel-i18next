@@ -162,6 +162,44 @@ export default function Dashboard() {
 
 > Set `keySeparator: false` so i18next looks up the flat, dotted keys the package emits (`test.greeting`) verbatim instead of treating the dots as nesting.
 
+#### A `t` / `tp` helper
+Interval plurals need the `_interval` suffix and `postProcess: 'interval'` on every call. A tiny wrapper hides that — `t` for everything (including standard plurals), `tp` for interval plurals:
+
+```ts
+// resources/js/useT.ts
+import { useTranslation } from 'react-i18next'
+
+export function useT() {
+    const { t, i18n } = useTranslation()
+
+    return {
+        t,
+        // interval pluralization, e.g. tp('test.multiPlural', 5)
+        tp: (key: string, count: number, options: Record<string, unknown> = {}) =>
+            t(`${key}_interval`, { count, postProcess: 'interval', ...options }),
+        i18n,
+    }
+}
+```
+
+```tsx
+const { t, tp } = useT()
+
+t('test.greeting', { name: 'World' }) // Hello World
+t('test.plural', { count: 5 })        // 5 apples  (standard plural, handled by i18next)
+tp('test.multiPlural', 5)             // 5 files   (interval plural)
+```
+
+Outside of React, bind the same two functions to the i18next instance directly:
+
+```ts
+import i18next from 'i18next'
+
+export const t = i18next.t.bind(i18next)
+export const tp = (key: string, count: number, options: Record<string, unknown> = {}) =>
+    i18next.t(`${key}_interval`, { count, postProcess: 'interval', ...options })
+```
+
 
 ### Testing
 
