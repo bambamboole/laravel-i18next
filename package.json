@@ -1,0 +1,11 @@
+{
+    "name": "laravel-i18next",
+    "private": true,
+    "description": "Frontend dependencies used by the browser tests.",
+    "devDependencies": {
+        "i18next": "^25.0.0",
+        "i18next-http-backend": "^3.0.0",
+        "i18next-intervalplural-postprocessor": "^3.0.0",
+        "playwright": "^1.60.0"
+    }
+}

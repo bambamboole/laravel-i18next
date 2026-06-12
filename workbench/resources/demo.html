@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>laravel-i18next · live demo</title>
+    <style>
+        :root { color-scheme: light dark; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; padding: 2.5rem 1.25rem;
+            font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            background: #0f172a; color: #e2e8f0;
+            display: flex; justify-content: center;
+        }
+        .wrap { width: 100%; max-width: 720px; }
+        h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
+        .sub { color: #94a3b8; margin: 0 0 2rem; }
+        .sub code { background: #1e293b; padding: .1rem .4rem; border-radius: .3rem; }
+        .card {
+            background: #1e293b; border: 1px solid #334155; border-radius: .75rem;
+            padding: 1.1rem 1.25rem; margin-bottom: 1rem;
+        }
+        .card h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: #93c5fd; margin: 0 0 .6rem; }
+        .out { font-size: 1.25rem; font-weight: 600; }
+        .src { color: #64748b; font-size: .8rem; margin-top: .4rem; font-family: ui-monospace, monospace; }
+        label { display: block; font-size: .8rem; color: #94a3b8; margin: .75rem 0 .25rem; }
+        input[type=text], input[type=number] {
+            background: #0f172a; border: 1px solid #475569; color: #e2e8f0;
+            border-radius: .4rem; padding: .4rem .6rem; font: inherit; width: 100%; max-width: 16rem;
+        }
+        input[type=range] { width: 100%; max-width: 16rem; }
+        pre {
+            background: #0f172a; border: 1px solid #334155; border-radius: .5rem;
+            padding: .9rem; overflow: auto; font-size: .8rem; margin: 0;
+        }
+        .badge { display: inline-block; background: #16a34a; color: #fff; font-size: .7rem; padding: .1rem .5rem; border-radius: 1rem; vertical-align: middle; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h1>laravel-i18next <span class="badge" id="status">loading…</span></h1>
+    <p class="sub">i18next in the browser, fetching from the Laravel route <code>/locales/en/translation.json</code> served by the package.</p>
+
+    <div class="card">
+        <h2>Interpolation</h2>
+        <div class="out" id="greeting">…</div>
+        <div class="src">test.greeting · <code>Hello :name</code></div>
+        <label for="name">name</label>
+        <input type="text" id="name" value="World">
+    </div>
+
+    <div class="card">
+        <h2>Pluralization</h2>
+        <div class="out" id="plural">…</div>
+        <div class="src">test.plural · <code>one apple|:count apples</code></div>
+        <label for="count">count: <span id="countLabel">5</span></label>
+        <input type="range" id="count" min="0" max="10" value="5">
+    </div>
+
+    <div class="card">
+        <h2>Interval plural <span class="src">(i18next-intervalplural-postprocessor)</span></h2>
+        <div class="out" id="interval">…</div>
+        <div class="src">test.multiPlural · <code>{0} no files|{1} one file|[2,*] :count files</code></div>
+    </div>
+
+    <div class="card">
+        <h2>Nested sub-directory file</h2>
+        <div class="out" id="entity">…</div>
+        <div class="src">entities.salesOrder.title · <code>lang/en/entities/salesOrder.php</code></div>
+    </div>
+
+    <div class="card">
+        <h2>Raw response</h2>
+        <pre id="raw">…</pre>
+    </div>
+</div>
+
+<script src="/i18next-demo/assets/i18next.js"></script>
+<script src="/i18next-demo/assets/i18next-http-backend.js"></script>
+<script src="/i18next-demo/assets/i18next-intervalplural-postprocessor.js"></script>
+<script>
+    const $ = (id) => document.getElementById(id);
+
+    function render() {
+        const name = $('name').value || 'there';
+        const count = Number($('count').value);
+        $('countLabel').textContent = count;
+        $('greeting').textContent = i18next.t('test.greeting', { name });
+        $('plural').textContent = i18next.t('test.plural', { count });
+        $('interval').textContent = i18next.t('test.multiPlural_interval', { count, postProcess: 'interval' });
+        $('entity').textContent = i18next.t('entities.salesOrder.title');
+    }
+
+    i18next
+        .use(i18nextHttpBackend)
+        .use(i18nextIntervalPluralPostProcessor)
+        .init({
+            lng: 'en',
+            fallbackLng: false,
+            keySeparator: false, // the package exposes flat, dotted keys
+            backend: { loadPath: '/locales/{{lng}}/translation.json' },
+        })
+        .then(() => {
+            $('status').textContent = 'ready';
+            ['name', 'count'].forEach((id) => $(id).addEventListener('input', render));
+            render();
+        })
+        .catch((error) => { $('status').textContent = 'error: ' + error; });
+
+    fetch('/locales/en/translation.json')
+        .then((r) => r.json())
+        .then((json) => { $('raw').textContent = JSON.stringify(json, null, 2); });
+</script>
+</body>
+</html>

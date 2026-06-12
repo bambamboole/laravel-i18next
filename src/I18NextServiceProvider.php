@@ -4,11 +4,20 @@ namespace Bambamboole\LaravelI18Next;
 
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\ServiceProvider;
+use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class I18NextServiceProvider extends ServiceProvider
+class I18NextServiceProvider extends PackageServiceProvider
 {
-    public function register(): void
+    public function configurePackage(Package $package): void
+    {
+        $package
+            ->name('i18next')
+            ->hasConfigFile()
+            ->hasRoute('web');
+    }
+
+    public function packageRegistered(): void
     {
         $this->app->singleton(
             I18NextTranslationsLoader::class,
@@ -18,11 +27,5 @@ class I18NextServiceProvider extends ServiceProvider
                 $app->langPath(),
             ),
         );
-    }
-
-    public function boot(): void
-    {
-        $this->mergeConfigFrom(__DIR__.'/../config/i18next.php', 'i18next');
-        $this->loadRoutesFrom(__DIR__.'/routes.php');
     }
 }

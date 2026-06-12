@@ -1,0 +1,7 @@
+providers:
+  - Bambamboole\LaravelI18Next\I18NextServiceProvider
+
+workbench:
+  start: '/i18next-demo'
+  discovers:
+    web: true

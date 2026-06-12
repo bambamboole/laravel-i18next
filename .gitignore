@@ -1,5 +1,12 @@
 vendor
-.phpunit.result.cache
+node_modules
 composer.lock
+.phpunit.cache
+tests/Browser/Screenshots
+.phpunit.result.cache
+coverage
 coverage.xml
 .idea
+.DS_Store
+
+solo.yml
