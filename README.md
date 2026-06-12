@@ -8,7 +8,7 @@ If you are using i18next in your frontend and Laravel in your backend, this pack
 
 ## Requirements
 
-- PHP 8.2+
+- PHP 8.3+
 - Laravel 11, 12 or 13
 
 
@@ -82,7 +82,17 @@ app.use(I18NextVue, {i18next})
 ### Testing
 
 ```bash
-composer test
+composer test          # unit + feature
+composer test:browser  # end-to-end browser test (needs npm install + playwright)
+```
+
+### Demo
+
+Run a live demo page that drives i18next in the browser against the package routes:
+
+```bash
+npm install
+composer serve   # then open http://127.0.0.1:8000/i18next-demo
 ```
 
 ## Contributing
