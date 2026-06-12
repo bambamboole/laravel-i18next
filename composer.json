@@ -31,6 +31,7 @@
         "laravel/pint": "^1.16",
         "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
         "pestphp/pest": "^3.0 || ^4.0",
+        "pestphp/pest-plugin-browser": "^4.3",
         "pestphp/pest-plugin-laravel": "^3.0 || ^4.0"
     },
     "autoload": {
@@ -47,8 +48,9 @@
         "analyse": "vendor/bin/phpstan analyse",
         "lint": "vendor/bin/pint",
         "test:lint": "vendor/bin/pint --test",
-        "test": "vendor/bin/pest",
-        "test:coverage": "vendor/bin/pest --coverage"
+        "test": "vendor/bin/pest --testsuite Unit,Feature",
+        "test:browser": "vendor/bin/pest --testsuite Browser",
+        "test:coverage": "vendor/bin/pest --testsuite Unit,Feature --coverage"
     },
     "config": {
         "sort-packages": true,

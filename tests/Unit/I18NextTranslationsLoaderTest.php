@@ -9,6 +9,7 @@ it('converts laravel translations into the i18next format', function () {
     $fs = $this->createMock(Filesystem::class);
     $loader = $this->createMock(Loader::class);
 
+    $fs->method('isDirectory')->with('langPath/en')->willReturn(true);
     $fs->expects($this->once())
         ->method('allFiles')
         ->with('langPath/en')

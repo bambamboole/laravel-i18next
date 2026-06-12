@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>laravel-i18next browser demo</title>
+</head>
+<body>
+    <h1 id="greeting">…</h1>
+    <p id="apples">…</p>
+    <p id="entity">…</p>
+    <p id="error"></p>
+
+    <script src="/i18next-demo/i18next.js"></script>
+    <script src="/i18next-demo/i18next-http-backend.js"></script>
+    <script>
+        i18next
+            .use(i18nextHttpBackend)
+            .init({
+                lng: 'en',
+                // The package exposes flat, dotted i18next keys.
+                keySeparator: false,
+                backend: { loadPath: '/locales/{{lng}}/translation.json' },
+            })
+            .then(function () {
+                document.getElementById('greeting').textContent = i18next.t('test.greeting', { name: 'World' });
+                document.getElementById('apples').textContent = i18next.t('test.plural', { count: 5 });
+                document.getElementById('entity').textContent = i18next.t('entities.salesOrder.title');
+            })
+            .catch(function (error) {
+                document.getElementById('error').textContent = 'i18next error: ' + error;
+            });
+    </script>
+</body>
+</html>

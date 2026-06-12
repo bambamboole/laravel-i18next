@@ -28,6 +28,13 @@ it('expands laravel multi-form plurals into an i18next interval string', functio
         ]);
 });
 
+it('returns an empty set for a locale without translation files', function () {
+    // i18next requests its fallback locale (e.g. "dev"), which has no lang dir.
+    $this->getJson('/locales/dev/translation.json')
+        ->assertOk()
+        ->assertExactJson([]);
+});
+
 it('serves translations from nested php files under sub directories', function () {
     $response = $this->getJson('/locales/en/translation.json');
 

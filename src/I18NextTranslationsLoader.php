@@ -18,8 +18,13 @@ class I18NextTranslationsLoader
     public function loadTranslations(string $locale): array
     {
         $translations = $this->loader->load($locale, '*', '*');
+        $localePath = $this->langPath.'/'.$locale;
 
-        foreach ($this->fs->allFiles($this->langPath.'/'.$locale) as $file) {
+        // A locale may have only a JSON file (or not exist at all, e.g. an
+        // i18next fallback such as "dev"); in that case there are no PHP groups.
+        $phpFiles = $this->fs->isDirectory($localePath) ? $this->fs->allFiles($localePath) : [];
+
+        foreach ($phpFiles as $file) {
             if ($file->getExtension() !== 'php') {
                 continue;
             }
