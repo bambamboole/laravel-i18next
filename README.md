@@ -41,6 +41,70 @@ You can install the package via composer.
 composer require bambamboole/laravel-i18next
 ```
 
+## Configuration
+
+Publish the config to customise routing, the missing-translation endpoint and caching:
+
+```bash
+php artisan vendor:publish --tag="i18next-config"
+```
+
+```php
+return [
+    'routes' => [
+        'enabled' => true,
+        'prefix' => '',                 // e.g. 'api'
+        'middleware' => [],             // e.g. ['web'] for session/CSRF
+        'locale_pattern' => '[A-Za-z_-]+', // also guards against path traversal
+    ],
+
+    // Map a requested locale to the one used on disk, e.g. ['de-DE' => 'de'].
+    'locale_map' => [],
+
+    // The store route writes files to disk — keep it out of production.
+    'save_missing' => [
+        'enabled' => env('I18NEXT_SAVE_MISSING', true),
+        'middleware' => [],             // e.g. ['auth'] or a throttle
+    ],
+
+    // Cache the converted payload per locale; flushed when missing keys are saved.
+    'cache' => [
+        'enabled' => false,
+        'store' => null,                // null = default cache store
+        'ttl' => null,                  // null = forever
+    ],
+
+    // 'flat' = dotted keys (use keySeparator: false), 'nested' = nested JSON tree.
+    'output' => 'flat',
+
+    // Load translations as i18next namespaces (/locales/{lng}/{ns}.json).
+    'namespaces' => false,
+];
+```
+
+Set `'output' => 'nested'` if you'd rather receive a nested JSON tree and keep i18next's default dot key separator (no `keySeparator: false` needed).
+
+### Namespaces
+Set `'namespaces' => true` to load translations as i18next namespaces, where the
+**namespace is the path of the group file** under `lang/{locale}`:
+
+| Request | Source | i18next |
+| --- | --- | --- |
+| `/locales/en/translation.json` | `lang/en.json` (root strings) | `t('key')` |
+| `/locales/en/auth.json` | `lang/en/auth.php` | `t('auth:key')` |
+| `/locales/en/entities/salesOrder.json` | `lang/en/entities/salesOrder.php` | `t('entities/salesOrder:title')` |
+
+Keys are returned unprefixed (the namespace is the prefix). Configure the backend
+with `loadPath: '/locales/{{lng}}/{{ns}}.json'` and list your namespaces in `ns`.
+
+> Saving missing keys for a slashed namespace reconstructs the full dotted key
+> (`entities.salesOrder.subtitle`). With a `laravel-translation-dumper` version
+> that supports writing into existing nested files, it lands back in
+> `entities/salesOrder.php`; otherwise it falls into a flat `entities.php`.
+
+> **Security:** the store route writes translation files. Disable it in production
+> (`I18NEXT_SAVE_MISSING=false`) or put it behind auth via `save_missing.middleware`.
+
 ## Usage
 The package is still in its early development and therefor pretty opinionated and not very flexible.
 

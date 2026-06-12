@@ -2,4 +2,28 @@
 
 return [
 
+    'routes' => [
+        'enabled' => true,
+        'prefix' => '',
+        'middleware' => [],
+        'locale_pattern' => '[A-Za-z_-]+',
+    ],
+
+    'locale_map' => [],
+
+    'save_missing' => [
+        'enabled' => env('I18NEXT_SAVE_MISSING', true),
+        'middleware' => [],
+    ],
+
+    'cache' => [
+        'enabled' => false,
+        'store' => null,
+        'ttl' => null,
+    ],
+
+    'output' => 'flat',
+
+    'namespaces' => false,
+
 ];

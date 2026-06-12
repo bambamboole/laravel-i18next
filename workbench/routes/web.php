@@ -2,13 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 
-// These routes back the `composer serve` demo only. The test suite defines its
-// own routes and lang paths, so skip them when running under PHPUnit/Pest.
 if (app()->runningUnitTests()) {
     return;
 }
 
-// Serve the bundled fixture translations through the package routes.
 app()->useLangPath(dirname(__DIR__, 2).'/tests/Fixtures/lang');
 
 Route::get('/', fn () => redirect('/i18next-demo'));
