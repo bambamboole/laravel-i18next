@@ -9,17 +9,20 @@ class FetchTranslationsController
 {
     public function __construct(private I18NextTranslationsLoader $translationsLoader) {}
 
-    public function __invoke(string $locale): array
+    public function __invoke(string $locale, ?string $namespace = null): array
     {
+        $factory = $namespace === null
+            ? fn (): array => $this->translationsLoader->loadTranslations($locale)
+            : fn (): array => $this->translationsLoader->loadNamespace($locale, $namespace);
+
         $cache = config('i18next.cache', []);
 
         if (! ($cache['enabled'] ?? false)) {
-            return $this->translationsLoader->loadTranslations($locale);
+            return $factory();
         }
 
         $store = Cache::store($cache['store'] ?? null);
-        $key = I18NextTranslationsLoader::cacheKey($locale);
-        $factory = fn (): array => $this->translationsLoader->loadTranslations($locale);
+        $key = I18NextTranslationsLoader::cacheKey($locale, $namespace);
 
         return ($cache['ttl'] ?? null) === null
             ? $store->rememberForever($key, $factory)

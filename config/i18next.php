@@ -63,4 +63,18 @@ return [
      */
     'output' => 'flat',
 
+    /*
+     |--------------------------------------------------------------------------
+     | Namespaces
+     |--------------------------------------------------------------------------
+     |
+     | When enabled the fetch route becomes /locales/{locale}/{namespace}.json,
+     | where the namespace is the path of the group file under lang/{locale}
+     | (e.g. "entities/salesOrder" -> lang/{locale}/entities/salesOrder.php).
+     | The reserved "translation" namespace maps to the locale's root JSON file.
+     | Use it with i18next's loadPath: '/locales/{{lng}}/{{ns}}.json'.
+     |
+     */
+    'namespaces' => false,
+
 ];

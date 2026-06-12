@@ -46,18 +46,31 @@ class I18NextServiceProvider extends PackageServiceProvider
         }
 
         $pattern = $config->get('i18next.routes.locale_pattern', '[A-Za-z_-]+');
+        $namespaces = (bool) $config->get('i18next.namespaces', false);
+
+        // In namespace mode the namespace is the path of the group file
+        // (e.g. "entities/salesOrder"), so the parameter may contain slashes.
+        [$fetchUri, $storeUri] = $namespaces
+            ? ['locales/{locale}/{namespace}.json', 'locales/add/{locale}/{namespace}']
+            : ['locales/{locale}/translation.json', 'locales/add/{locale}/translation'];
 
         Route::group([
             'prefix' => $config->get('i18next.routes.prefix', ''),
             'middleware' => $config->get('i18next.routes.middleware', []),
-        ], function () use ($config, $pattern): void {
-            Route::get('locales/{locale}/translation.json', FetchTranslationsController::class)
-                ->where('locale', $pattern)
-                ->name('i18next.fetch');
+        ], function () use ($config, $pattern, $namespaces, $fetchUri, $storeUri): void {
+            $apply = function ($route) use ($pattern, $namespaces) {
+                $route->where('locale', $pattern);
+                if ($namespaces) {
+                    $route->where('namespace', '[A-Za-z0-9_/-]+');
+                }
+
+                return $route;
+            };
+
+            $apply(Route::get($fetchUri, FetchTranslationsController::class))->name('i18next.fetch');
 
             if ($config->get('i18next.save_missing.enabled', true)) {
-                Route::post('locales/add/{locale}/translation', StoreMissingTranslationsController::class)
-                    ->where('locale', $pattern)
+                $apply(Route::post($storeUri, StoreMissingTranslationsController::class))
                     ->middleware($config->get('i18next.save_missing.middleware', []))
                     ->name('i18next.store');
             }

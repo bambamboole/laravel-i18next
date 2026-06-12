@@ -17,9 +17,9 @@ class I18NextTranslationsLoader
         private bool $nested = false,
     ) {}
 
-    public static function cacheKey(string $locale): string
+    public static function cacheKey(string $locale, ?string $namespace = null): string
     {
-        return 'i18next.translations.'.$locale;
+        return 'i18next.translations.'.$locale.($namespace !== null ? '.'.$namespace : '');
     }
 
     public function loadTranslations(string $locale): array
@@ -49,6 +49,28 @@ class I18NextTranslationsLoader
             $translations = array_merge($translations, $groupTranslations);
         }
 
+        return $this->finalize($translations);
+    }
+
+    /**
+     * Load a single i18next namespace, where the namespace is the path of the
+     * group file under lang/{locale} (e.g. "entities/salesOrder" maps to
+     * lang/{locale}/entities/salesOrder.php). The reserved "translation"
+     * namespace maps to the locale's root JSON file. Keys are returned
+     * unprefixed, since the namespace itself is the prefix.
+     */
+    public function loadNamespace(string $locale, string $namespace): array
+    {
+        $translations = $namespace === 'translation'
+            ? $this->loader->load($locale, '*', '*')
+            : $this->loader->load($locale, $namespace);
+
+        return $this->finalize($translations);
+    }
+
+    /** @param array<array-key, mixed> $translations */
+    private function finalize(array $translations): array
+    {
         $prepared = $this->prepare($translations);
 
         return $this->nested ? Arr::undot($prepared) : $prepared;
