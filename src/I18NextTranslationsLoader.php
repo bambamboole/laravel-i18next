@@ -15,6 +15,11 @@ class I18NextTranslationsLoader
         private string $langPath,
     ) {}
 
+    public static function cacheKey(string $locale): string
+    {
+        return 'i18next.translations.'.$locale;
+    }
+
     public function loadTranslations(string $locale): array
     {
         $translations = $this->loader->load($locale, '*', '*');

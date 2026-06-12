@@ -41,6 +41,41 @@ You can install the package via composer.
 composer require bambamboole/laravel-i18next
 ```
 
+## Configuration
+
+Publish the config to customise routing, the missing-translation endpoint and caching:
+
+```bash
+php artisan vendor:publish --tag="i18next-config"
+```
+
+```php
+return [
+    'routes' => [
+        'enabled' => true,
+        'prefix' => '',                 // e.g. 'api'
+        'middleware' => [],             // e.g. ['web'] for session/CSRF
+        'locale_pattern' => '[A-Za-z_-]+', // also guards against path traversal
+    ],
+
+    // The store route writes files to disk — keep it out of production.
+    'save_missing' => [
+        'enabled' => env('I18NEXT_SAVE_MISSING', true),
+        'middleware' => [],             // e.g. ['auth'] or a throttle
+    ],
+
+    // Cache the converted payload per locale; flushed when missing keys are saved.
+    'cache' => [
+        'enabled' => false,
+        'store' => null,                // null = default cache store
+        'ttl' => null,                  // null = forever
+    ],
+];
+```
+
+> **Security:** the store route writes translation files. Disable it in production
+> (`I18NEXT_SAVE_MISSING=false`) or put it behind auth via `save_missing.middleware`.
+
 ## Usage
 The package is still in its early development and therefor pretty opinionated and not very flexible.
 

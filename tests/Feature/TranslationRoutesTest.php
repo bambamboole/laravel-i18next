@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+use Bambamboole\LaravelI18Next\I18NextTranslationsLoader;
 
 it('serves the laravel translations in the i18next format', function () {
     $response = $this->getJson('/locales/en/translation.json');
@@ -52,15 +53,14 @@ it('serves translations from nested php files under sub directories', function (
         ]);
 });
 
-it('persists missing translations and returns the updated set', function () {
+it('persists a missing translation under its key and returns the updated set', function () {
+    // i18next posts { "<key>": "<fallbackValue>" }; default fallback == key.
     $response = $this->postJson('/locales/add/en/translation', [
-        'some.missing.key' => 'A brand new string',
+        'A brand new string' => 'A brand new string',
     ]);
 
     $response->assertOk();
 
-    // The value sent by i18next becomes the translation key; a value containing
-    // spaces is stored as a JSON translation.
     expect($response->json())
         ->toHaveKey('A brand new string', 'i18next-A brand new string');
 
@@ -71,7 +71,44 @@ it('persists missing translations and returns the updated set', function () {
         ->toHaveKey('simple', 'value');
 });
 
+it('stores the request key, not the fallback value', function () {
+    // When a default value is provided it differs from the key; the key wins.
+    $this->postJson('/locales/add/en/translation', [
+        'Missing headline' => 'Some default text',
+    ])->assertOk();
+
+    $stored = json_decode(file_get_contents($this->langPath.'/en.json'), true);
+
+    expect($stored)
+        ->toHaveKey('Missing headline')
+        ->not->toHaveKey('Some default text');
+});
+
+it('rejects a locale that does not match the allowed pattern', function () {
+    // Guards against path traversal: "." is not in [A-Za-z_-].
+    $this->getJson('/locales/en.US/translation.json')->assertNotFound();
+    $this->postJson('/locales/add/..%2F../translation')->assertNotFound();
+});
+
 it('registers the package routes with their names', function () {
     expect(route('i18next.fetch', ['locale' => 'en']))->toEndWith('/locales/en/translation.json')
         ->and(route('i18next.store', ['locale' => 'en']))->toEndWith('/locales/add/en/translation');
+});
+
+it('does not register the store route when saving is disabled', function () {
+    $this->withConfig(['i18next.save_missing.enabled' => false]);
+
+    expect(app('router')->has('i18next.store'))->toBeFalse();
+    $this->postJson('/locales/add/en/translation', ['Foo' => 'Foo'])->assertNotFound();
+});
+
+it('serves the converted payload from the cache when caching is enabled', function () {
+    $this->withConfig(['i18next.cache.enabled' => true]);
+
+    $key = I18NextTranslationsLoader::cacheKey('en');
+    expect(cache()->has($key))->toBeFalse();
+
+    $this->getJson('/locales/en/translation.json')->assertOk();
+
+    expect(cache()->get($key))->toMatchArray(['test.greeting' => 'Hello {{name}}']);
 });
