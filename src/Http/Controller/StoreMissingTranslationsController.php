@@ -12,10 +12,13 @@ use Illuminate\Support\Facades\Cache;
 
 class StoreMissingTranslationsController
 {
+    use ResolvesLocale;
+
     public function __construct(private Filesystem $fs, private I18NextTranslationsLoader $translationsLoader) {}
 
     public function __invoke(Request $request, string $locale, ?string $namespace = null): array
     {
+        $locale = $this->resolveLocale($locale);
         $group = $namespace !== null && $namespace !== 'translation' ? $namespace : null;
 
         $translations = [];

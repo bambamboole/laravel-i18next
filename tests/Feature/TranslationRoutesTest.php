@@ -79,6 +79,13 @@ it('stores the request key, not the fallback value', function () {
         ->not->toHaveKey('Some default text');
 });
 
+it('maps the requested locale before loading', function () {
+    $this->withConfig(['i18next.locale_map' => ['en-US' => 'en']]);
+
+    expect($this->getJson('/locales/en-US/translation.json')->json())
+        ->toMatchArray(['simple' => 'value', 'test.greeting' => 'Hello {{name}}']);
+});
+
 it('rejects a locale that does not match the allowed pattern', function () {
     $this->getJson('/locales/en.US/translation.json')->assertNotFound();
     $this->postJson('/locales/add/..%2F../translation')->assertNotFound();

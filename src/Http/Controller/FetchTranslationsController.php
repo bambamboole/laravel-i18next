@@ -7,10 +7,14 @@ use Illuminate\Support\Facades\Cache;
 
 class FetchTranslationsController
 {
+    use ResolvesLocale;
+
     public function __construct(private I18NextTranslationsLoader $translationsLoader) {}
 
     public function __invoke(string $locale, ?string $namespace = null): array
     {
+        $locale = $this->resolveLocale($locale);
+
         $factory = $namespace === null
             ? fn (): array => $this->translationsLoader->loadTranslations($locale)
             : fn (): array => $this->translationsLoader->loadNamespace($locale, $namespace);

@@ -58,6 +58,9 @@ return [
         'locale_pattern' => '[A-Za-z_-]+', // also guards against path traversal
     ],
 
+    // Map a requested locale to the one used on disk, e.g. ['de-DE' => 'de'].
+    'locale_map' => [],
+
     // The store route writes files to disk — keep it out of production.
     'save_missing' => [
         'enabled' => env('I18NEXT_SAVE_MISSING', true),

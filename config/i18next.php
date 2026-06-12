@@ -9,6 +9,8 @@ return [
         'locale_pattern' => '[A-Za-z_-]+',
     ],
 
+    'locale_map' => [],
+
     'save_missing' => [
         'enabled' => env('I18NEXT_SAVE_MISSING', true),
         'middleware' => [],
