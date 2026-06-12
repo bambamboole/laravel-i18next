@@ -70,8 +70,8 @@ class I18NextTranslationsLoader
      * Map a Laravel translation value to one or more i18next entries keyed by
      * their plural suffix. A non plural value yields a single entry with an
      * empty suffix; a simple "one|other" value yields _one/_other; and explicit
-     * forms like "{0} none|{1} one|[2,*] many" yield _zero/_one/_other with the
-     * count conditions stripped.
+     * forms like "{0} none|{1} one|[2,*] many" yield a single _interval value in
+     * the i18next-intervalplural-postprocessor format.
      *
      * @return array<string, string>
      */
@@ -82,18 +82,18 @@ class I18NextTranslationsLoader
         }
 
         $segments = explode('|', $value);
-        $explicit = [];
-        $matched = 0;
+        $intervals = [];
         foreach ($segments as $segment) {
             if (preg_match('/^[{\[]([^\[\]{}]*)[}\]]\s*(.*)$/s', $segment, $matches)) {
-                $matched++;
-                $explicit[$this->pluralSuffix($matches[1])] = $matches[2];
+                $intervals[] = '('.$this->toInterval($matches[1]).')['.$matches[2].']';
             }
         }
 
-        // Every segment carried an explicit count/range condition.
-        if ($matched === count($segments)) {
-            return $explicit;
+        // Every segment carried an explicit count/range condition: emit an
+        // i18next interval plural string. The frontend needs the
+        // i18next-intervalplural-postprocessor to resolve it.
+        if (count($intervals) === count($segments)) {
+            return ['_interval' => implode(';', $intervals).';'];
         }
 
         [$one, $other] = array_pad($segments, 2, '');
@@ -101,13 +101,21 @@ class I18NextTranslationsLoader
         return ['_one' => $one, '_other' => $other];
     }
 
-    private function pluralSuffix(string $condition): string
+    /**
+     * Translate a Laravel plural condition into an i18next interval:
+     * "0" -> "0", "1" -> "1", "2,5" -> "2-5", "2,*" -> "2-inf".
+     */
+    private function toInterval(string $condition): string
     {
-        return match (trim($condition)) {
-            '0' => '_zero',
-            '1' => '_one',
-            default => '_other',
-        };
+        $condition = trim($condition);
+
+        if (! str_contains($condition, ',')) {
+            return $condition;
+        }
+
+        [$from, $to] = array_map('trim', explode(',', $condition, 2));
+
+        return $from.'-'.($to === '*' ? 'inf' : $to);
     }
 
     private function flatten($translations): array

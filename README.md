@@ -19,14 +19,19 @@ it supports Laravels JSON and PHP translation files and converts them on the fly
 PHP files in sub directories are namespaced by their path, so `lang/en/entities/salesOrder.php` is exposed under the `entities.salesOrder.*` keys.
 
 ### Pluralization
-Laravel plural strings are converted to i18next plural suffixes:
+Laravel plural strings are converted to i18next plurals:
 
 | Laravel | i18next |
 | --- | --- |
 | `one apple\|:count apples` | `key_one`, `key_other` |
-| `{0} no files\|{1} one file\|[2,*] :count files` | `key_zero`, `key_one`, `key_other` |
+| `{0} no files\|{1} one file\|[2,*] :count files` | `key_interval` (see below) |
 
-Explicit count conditions (`{0}`, `{1}`) map to `_zero`/`_one`; any other condition or open-ended range (`[2,*]`) maps to `_other`.
+Simple `one\|other` strings become standard i18next `_one`/`_other` plurals.
+
+Explicit count/range forms (`{0}`, `{1}`, `[2,*]`, …) are converted to the
+[i18next-intervalplural-postprocessor](https://github.com/i18next/i18next-intervalPlural-postProcessor)
+format, e.g. `(0)[no files];(1)[one file];(2-inf)[{{count}} files];`. Add that
+postprocessor on the frontend to resolve them.
 
 ## Installation
 

@@ -16,7 +16,7 @@ it('serves the laravel translations in the i18next format', function () {
         ]);
 });
 
-it('expands laravel multi-form plurals into i18next plural suffixes', function () {
+it('expands laravel multi-form plurals into an i18next interval string', function () {
     $response = $this->getJson('/locales/en/translation.json');
 
     $response->assertOk();
@@ -24,9 +24,7 @@ it('expands laravel multi-form plurals into i18next plural suffixes', function (
     // '{0} no files|{1} one file|[2,*] :count files'
     expect($response->json())
         ->toMatchArray([
-            'test.multiPlural_zero' => 'no files',
-            'test.multiPlural_one' => 'one file',
-            'test.multiPlural_other' => '{{count}} files',
+            'test.multiPlural_interval' => '(0)[no files];(1)[one file];(2-inf)[{{count}} files];',
         ]);
 });
 
