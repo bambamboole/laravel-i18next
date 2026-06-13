@@ -25,15 +25,8 @@ class I18NextTranslationsLoader
     public function loadTranslations(string $locale): array
     {
         $translations = $this->loader->load($locale, '*', '*');
-        $localePath = $this->langPath.'/'.$locale;
 
-        $phpFiles = $this->fs->isDirectory($localePath) ? $this->fs->allFiles($localePath) : [];
-
-        foreach ($phpFiles as $file) {
-            if ($file->getExtension() !== 'php') {
-                continue;
-            }
-            $group = str_replace('\\', '/', substr($file->getRelativePathname(), 0, -strlen('.php')));
+        foreach ($this->phpGroups($this->langPath, $locale) as $group) {
             $prefix = str_replace('/', '.', $group);
 
             $nonPrefixedGroupTranslations = $this->loader->load($locale, $group);
@@ -44,16 +37,86 @@ class I18NextTranslationsLoader
             $translations = array_merge($translations, $groupTranslations);
         }
 
+        foreach (array_keys($this->namespacePaths()) as $namespace) {
+            foreach ($this->loadLaravelNamespace($locale, (string) $namespace) as $key => $translation) {
+                $translations[$namespace.'::'.$key] = $translation;
+            }
+        }
+
         return $this->finalize($translations);
     }
 
     public function loadNamespace(string $locale, string $namespace): array
     {
-        $translations = $namespace === 'translation'
-            ? $this->loader->load($locale, '*', '*')
-            : $this->loader->load($locale, $namespace);
+        if ($namespace === 'translation') {
+            return $this->finalize($this->loader->load($locale, '*', '*'));
+        }
+
+        if ($this->isLaravelNamespace($namespace)) {
+            return $this->finalize($this->loadLaravelNamespace($locale, $namespace));
+        }
+
+        [$laravelNamespace, $group] = $this->parseLaravelNamespace($namespace);
+
+        $translations = $this->loader->load($locale, $group, $laravelNamespace);
 
         return $this->finalize($translations);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function namespacePaths(): array
+    {
+        return $this->loader->namespaces();
+    }
+
+    public function isLaravelNamespace(string $namespace): bool
+    {
+        return isset($this->namespacePaths()[$namespace]);
+    }
+
+    /** @return array<string, mixed> */
+    private function loadLaravelNamespace(string $locale, string $namespace): array
+    {
+        $translations = [];
+
+        foreach ($this->phpGroups($this->namespacePaths()[$namespace], $locale) as $group) {
+            $prefix = str_replace('/', '.', $group);
+            foreach ($this->loader->load($locale, $group, $namespace) as $key => $translation) {
+                $translations[$prefix.'.'.$key] = $translation;
+            }
+        }
+
+        return $translations;
+    }
+
+    /** @return array<int, string> */
+    private function phpGroups(string $langPath, string $locale): array
+    {
+        $localePath = $langPath.'/'.$locale;
+        $phpFiles = $this->fs->isDirectory($localePath) ? $this->fs->allFiles($localePath) : [];
+        $groups = [];
+
+        foreach ($phpFiles as $file) {
+            if ($file->getExtension() === 'php') {
+                $groups[] = str_replace('\\', '/', substr($file->getRelativePathname(), 0, -strlen('.php')));
+            }
+        }
+
+        return $groups;
+    }
+
+    /** @return array{0: string|null, 1: string} */
+    private function parseLaravelNamespace(string $namespace): array
+    {
+        if (! str_contains($namespace, '::')) {
+            return [null, $namespace];
+        }
+
+        [$laravelNamespace, $group] = explode('::', $namespace, 2);
+
+        return [$laravelNamespace, $group];
     }
 
     /** @param array<array-key, mixed> $translations */
@@ -87,7 +150,7 @@ class I18NextTranslationsLoader
 
     private function replaceVariables(string $value): string
     {
-        return preg_replace('/:(\w+)/', '{{$1}}', $value) ?? $value;
+        return preg_replace('/(?<!:):(\w+)/', '{{$1}}', $value) ?? $value;
     }
 
     /** @return array<string, string> */
