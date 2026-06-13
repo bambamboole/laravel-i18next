@@ -59,7 +59,7 @@ class I18NextServiceProvider extends PackageServiceProvider
             $apply = function ($route) use ($pattern, $namespaces) {
                 $route->where('locale', $pattern);
                 if ($namespaces) {
-                    $route->where('namespace', '[A-Za-z0-9_/-]+');
+                    $route->where('namespace', '[A-Za-z0-9_:/-]+');
                 }
 
                 return $route;

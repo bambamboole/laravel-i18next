@@ -93,14 +93,28 @@ Set `'namespaces' => true` to load translations as i18next namespaces, where the
 | `/locales/en/translation.json` | `lang/en.json` (root strings) | `t('key')` |
 | `/locales/en/auth.json` | `lang/en/auth.php` | `t('auth:key')` |
 | `/locales/en/entities/salesOrder.json` | `lang/en/entities/salesOrder.php` | `t('entities/salesOrder:title')` |
+| `/locales/en/lattice.json` | `packages/lattice/lang/en/messages.php` | `useTranslation('lattice')`, then `t('messages.key')` |
 
 Keys are returned unprefixed (the namespace is the prefix). Configure the backend
 with `loadPath: '/locales/{{lng}}/{{ns}}.json'` and list your namespaces in `ns`.
+For Laravel package translations, use the Laravel package namespace as the i18next
+namespace, for example `lattice`. Package group files are exposed below it as
+dotted keys, for example `messages.key`. The package must register the path with
+`loadTranslationsFrom($path, 'lattice')`.
+
+When namespaces are disabled, package translations are exposed with their full
+Laravel keys, for example `lattice::messages.key`. Keys without a `::` namespace
+continue to target normal app translations.
 
 > Saving missing keys for a slashed namespace reconstructs the full dotted key
 > (`entities.salesOrder.subtitle`). With a `laravel-translation-dumper` version
 > that supports writing into existing nested files, it lands back in
 > `entities/salesOrder.php`; otherwise it falls into a flat `entities.php`.
+
+> Saving missing keys for a Laravel package namespace writes back into the
+> registered package lang path, for example `messages.subtitle` in the `lattice`
+> i18next namespace is written as `lattice::messages.subtitle` and lands in
+> `packages/lattice/lang/en/messages.php`.
 
 > **Security:** the store route writes translation files. Disable it in production
 > (`I18NEXT_SAVE_MISSING=false`) or put it behind auth via `save_missing.middleware`.
@@ -304,4 +318,3 @@ If you discover any security related issues, please email manuel@christlieb.eu i
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
-

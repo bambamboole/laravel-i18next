@@ -50,6 +50,18 @@ it('serves translations from nested php files under sub directories', function (
         ]);
 });
 
+it('serves registered package translations under their laravel namespace keys', function () {
+    registerPackageTranslations($this->langPath);
+
+    $response = $this->getJson('/locales/en/translation.json');
+
+    $response->assertOk();
+
+    expect($response->json())
+        ->toHaveKey('courier::messages.welcome', 'Welcome {{name}}')
+        ->toHaveKey('test.greeting', 'Hello {{name}}');
+});
+
 it('persists a missing translation under its key and returns the updated set', function () {
     $response = $this->postJson('/locales/add/en/translation', [
         'A brand new string' => 'A brand new string',
@@ -65,6 +77,17 @@ it('persists a missing translation under its key and returns the updated set', f
     expect($stored)
         ->toHaveKey('A brand new string', 'i18next-A brand new string')
         ->toHaveKey('simple', 'value');
+});
+
+it('writes missing package namespace keys from the translation route into the package lang path', function () {
+    $packageLangPath = registerPackageTranslations($this->langPath);
+
+    $this->postJson('/locales/add/en/translation', [
+        'courier::messages.subtitle' => 'Some default text',
+    ])->assertOk();
+
+    expect(require $packageLangPath.'/en/messages.php')
+        ->toHaveKey('subtitle', 'i18next-courier::messages.subtitle');
 });
 
 it('stores the request key, not the fallback value', function () {

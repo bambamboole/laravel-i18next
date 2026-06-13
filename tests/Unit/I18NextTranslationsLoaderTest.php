@@ -18,6 +18,7 @@ it('converts laravel translations into the i18next format', function () {
             new SplFileInfo('langPath/en/entities/salesOrder.php', 'entities', 'entities/salesOrder.php'),
         ]);
 
+    $loader->method('namespaces')->willReturn([]);
     $loader->method('load')
         ->willReturnCallback(function ($locale, $group) {
             expect($locale)->toBe('en');

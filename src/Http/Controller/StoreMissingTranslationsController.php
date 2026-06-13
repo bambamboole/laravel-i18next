@@ -14,19 +14,27 @@ class StoreMissingTranslationsController
 {
     use ResolvesLocale;
 
-    public function __construct(private Filesystem $fs, private I18NextTranslationsLoader $translationsLoader) {}
+    public function __construct(
+        private Filesystem $fs,
+        private I18NextTranslationsLoader $translationsLoader,
+    ) {}
 
     public function __invoke(Request $request, string $locale, ?string $namespace = null): array
     {
         $locale = $this->resolveLocale($locale);
-        $group = $namespace !== null && $namespace !== 'translation' ? $namespace : null;
+        $group = $this->translationGroup($namespace);
+        $translationNamespace = $this->translationNamespace($namespace);
 
         $translations = [];
         foreach (array_keys($request->json()->all()) as $key) {
-            $translations[] = new Translation((string) $key, 'i18next-'.$key);
+            $key = (string) $key;
+            $translations[] = new Translation($translationNamespace.$key, 'i18next-'.$key);
         }
 
-        $dumper = new TranslationDumper(new FileTranslationWriter($this->fs, lang_path()), $locale);
+        $dumper = new TranslationDumper(
+            new FileTranslationWriter($this->fs, lang_path(), fn (): array => $this->translationsLoader->namespacePaths()),
+            $locale,
+        );
         Cache::lock('i18next-translation-dump', 5)
             ->block(5, function () use ($dumper, $translations, $group) {
                 $dumper->dump($translations, $group);
@@ -40,5 +48,32 @@ class StoreMissingTranslationsController
         return $namespace === null
             ? $this->translationsLoader->loadTranslations($locale)
             : $this->translationsLoader->loadNamespace($locale, $namespace);
+    }
+
+    private function translationNamespace(?string $namespace): string
+    {
+        if ($namespace === null || $namespace === 'translation') {
+            return '';
+        }
+
+        if (str_contains($namespace, '::')) {
+            return $namespace.'.';
+        }
+
+        return $this->translationsLoader->isLaravelNamespace($namespace) ? $namespace.'::' : '';
+    }
+
+    private function translationGroup(?string $namespace): ?string
+    {
+        if (
+            $namespace === null
+            || $namespace === 'translation'
+            || str_contains($namespace, '::')
+            || $this->translationsLoader->isLaravelNamespace($namespace)
+        ) {
+            return null;
+        }
+
+        return $namespace;
     }
 }
